@@ -1,0 +1,23 @@
+{
+  "name": "webcheck-cheerio",
+  "version": "0.0.1",
+  "description": "A cheerio plugin for webcheck",
+  "main": "webcheck-cheerio.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "webcheck",
+    "cheerio"
+  ],
+  "author": "Arne Schubert <atd.schubert@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "webcheck": "~1.0.0"
+  },
+  "devDependencies": {
+    "express": "^4.13.3",
+    "freeport": "^1.0.5"
+  }
+}
