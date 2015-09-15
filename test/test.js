@@ -15,6 +15,7 @@ describe('Cheerio Plugin', function () {
     before(function (done) {
         var app = express();
 
+        /*jslint unparam: true*/
         app.get('/', function (req, res) {
             res.send('<html><head></head><body><p>index</p></body></html>');
         });
@@ -27,6 +28,7 @@ describe('Cheerio Plugin', function () {
         app.get('/json', function (req, res) {
             res.send({test: 'OK'});
         });
+        /*jslint unparam: false*/
 
         freeport(function (err, p) {
             if (err) {
@@ -64,7 +66,7 @@ describe('Cheerio Plugin', function () {
                     return done();
                 }
                 return done(new Error('Function not found'));
-            })
+            });
         });
         it('should have cheerioize result', function (done) {
             webcheck.once('result', function (result) {
@@ -73,7 +75,7 @@ describe('Cheerio Plugin', function () {
                         return done(err);
                     }
                     if ($('p').text() === 'index') {
-                        return done()
+                        return done();
                     }
                     return done(new Error('Wrong content'));
                 });
@@ -84,7 +86,7 @@ describe('Cheerio Plugin', function () {
                 if (err) {
                     return done(err);
                 }
-            })
+            });
         });
         it('should have cheerioize result on http-error', function (done) {
             webcheck.once('result', function (result) {
@@ -93,7 +95,7 @@ describe('Cheerio Plugin', function () {
                         return done(err);
                     }
                     if ($('p').text() === '500') {
-                        return done()
+                        return done();
                     }
                     return done(new Error('Wrong content'));
                 });
@@ -104,7 +106,7 @@ describe('Cheerio Plugin', function () {
                 if (err) {
                     return done(err);
                 }
-            })
+            });
         });
         it('should not have getCheerio if result is not html or xml', function (done) {
             var notFound;
@@ -119,11 +121,11 @@ describe('Cheerio Plugin', function () {
                 if (err) {
                     return done(err);
                 }
-                if(notFound) {
+                if (notFound) {
                     return done();
                 }
                 return done(new Error('There was a getCheerio function'));
-            })
+            });
         });
         it('should process xml', function (done) {
             webcheck.once('result', function (result) {
@@ -132,7 +134,7 @@ describe('Cheerio Plugin', function () {
                         return done(err);
                     }
                     if ($('title').text() === 'XML') {
-                        return done()
+                        return done();
                     }
                     return done(new Error('Wrong content'));
                 });
@@ -143,7 +145,7 @@ describe('Cheerio Plugin', function () {
                 if (err) {
                     return done(err);
                 }
-            })
+            });
         });
         it('should load cheerio once', function (done) {
             var first;
@@ -172,8 +174,9 @@ describe('Cheerio Plugin', function () {
                 if (err) {
                     return done(err);
                 }
-            })
-        });it('should get cheerio after processing', function (done) {
+            });
+        });
+        it('should get cheerio after processing', function (done) {
             var first;
             webcheck.once('result', function (result) {
                 result.getCheerio(function (err, $) {
@@ -191,7 +194,7 @@ describe('Cheerio Plugin', function () {
                             }
                             return done(new Error('Not the same cheerio object'));
                         });
-                    }, 5)
+                    }, 5);
                 });
             });
             webcheck.crawl({
@@ -200,7 +203,7 @@ describe('Cheerio Plugin', function () {
                 if (err) {
                     return done(err);
                 }
-            })
+            });
         });
     });
 });
