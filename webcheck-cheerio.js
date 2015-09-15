@@ -9,19 +9,24 @@ var pkg = require('./package.json');
 /**
  * Cheerio plugin for webcheck
  * @author Arne Schubert <atd.schubert@gmail.com>
- * @param opts
+ * @param {{}} [opts] - Options for this plugin
+ * @param {RegExp|{test:Function}} [opts.filterContentType] - Filter content-type (defaults xml and html)
  * @augments Webcheck.Plugin
  * @constructor
  */
 var CheerioPlugin = function (opts) {
     WebcheckPlugin.apply(this, arguments);
 
+    opts = opts || {};
+
+    opts.filterContentType = opts.filterContentType || /html|xml/;
+
     this.middleware = function (result, next) {
         var triggered,
             $,
             error,
             cbList = [];
-        if(!/html|xml/.test(result.response.headers['content-type'])) {
+        if (!opts.filterContentType.test(result.response.headers['content-type'])) {
             return next();
         }
         /**
@@ -64,7 +69,7 @@ var CheerioPlugin = function (opts) {
 };
 
 CheerioPlugin.prototype = {
-    __proto__: WebcheckPlugin.prototype,
+    '__proto__': WebcheckPlugin.prototype,
     package: pkg
 };
 
