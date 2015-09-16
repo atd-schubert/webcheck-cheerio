@@ -5,12 +5,22 @@ var cheerio = require('cheerio');
 var WebcheckPlugin = require('webcheck/plugin');
 
 var pkg = require('./package.json');
-
+/**
+ * A helper function for empty regular expressions
+ * @private
+ * @type {{test: Function}}
+ */
+var emptyFilter = {
+    test: function () {
+        return true;
+    }
+};
 /**
  * Cheerio plugin for webcheck
  * @author Arne Schubert <atd.schubert@gmail.com>
  * @param {{}} [opts] - Options for this plugin
  * @param {RegExp|{test:Function}} [opts.filterContentType] - Filter content-type (defaults xml and html)
+ * @param {RegExp|{test:Function}} [opts.filterStatusCode] - Filter HTTP status code (default all)
  * @augments Webcheck.Plugin
  * @constructor
  */
@@ -20,13 +30,15 @@ var CheerioPlugin = function (opts) {
     opts = opts || {};
 
     opts.filterContentType = opts.filterContentType || /html|xml/;
+    opts.filterStatusCode = opts.filterStatusCode || emptyFilter;
 
     this.middleware = function (result, next) {
         var triggered,
             $,
             error,
             cbList = [];
-        if (!opts.filterContentType.test(result.response.headers['content-type'])) {
+        if (!opts.filterContentType.test(result.response.headers['content-type']) ||
+            !opts.filterStatusCode.test(result.response.statusCode.toString())) {
             return next();
         }
         /**

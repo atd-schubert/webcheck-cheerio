@@ -206,4 +206,167 @@ describe('Cheerio Plugin', function () {
             });
         });
     });
+    describe('Filter HTTP status code', function () {
+        var webcheck, plugin;
+
+        before(function () {
+            webcheck = new Webcheck();
+            plugin = new CheerioPlugin({
+                filterStatusCode: /^2/
+            });
+            webcheck.addPlugin(plugin);
+            plugin.enable();
+        });
+        it('should have a getCheerio function in result', function (done) {
+            var found;
+            webcheck.once('result', function (result) {
+                if (typeof result.getCheerio === 'function') {
+                    found = true;
+                }
+            });
+            webcheck.crawl({
+                url: 'http://localhost:' + port
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+                if (found) {
+                    return done();
+                }
+                return done(new Error('Function not found'));
+            });
+        });
+        it('should have cheerioize result', function (done) {
+            webcheck.once('result', function (result) {
+                result.getCheerio(function (err, $) {
+                    if (err) {
+                        return done(err);
+                    }
+                    if ($('p').text() === 'index') {
+                        return done();
+                    }
+                    return done(new Error('Wrong content'));
+                });
+            });
+            webcheck.crawl({
+                url: 'http://localhost:' + port
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+            });
+        });
+        it('should have cheerioize result on http-error', function (done) {
+            webcheck.once('result', function (result) {
+                if (typeof result.getCheerio === 'function') {
+                    return done(new Error('Does not filter status code'));
+                }
+                return done();
+            });
+            webcheck.crawl({
+                url: 'http://localhost:' + port + '/500'
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+            });
+        });
+        it('should not have getCheerio if result is not html or xml', function (done) {
+            var notFound;
+            webcheck.once('result', function (result) {
+                if (typeof result.getCheerio !== 'function') {
+                    notFound = true;
+                }
+            });
+            webcheck.crawl({
+                url: 'http://localhost:' + port + '/json'
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+                if (notFound) {
+                    return done();
+                }
+                return done(new Error('There was a getCheerio function'));
+            });
+        });
+        it('should process xml', function (done) {
+            webcheck.once('result', function (result) {
+                result.getCheerio(function (err, $) {
+                    if (err) {
+                        return done(err);
+                    }
+                    if ($('title').text() === 'XML') {
+                        return done();
+                    }
+                    return done(new Error('Wrong content'));
+                });
+            });
+            webcheck.crawl({
+                url: 'http://localhost:' + port + '/xml'
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+            });
+        });
+        it('should load cheerio once', function (done) {
+            var first;
+            webcheck.once('result', function (result) {
+                result.getCheerio(function (err, $) {
+                    if (err) {
+                        return done(err);
+                    }
+                    first = $;
+                });
+            });
+            webcheck.once('result', function (result) {
+                result.getCheerio(function (err, $) {
+                    if (err) {
+                        return done(err);
+                    }
+                    if (first === $) {
+                        return done();
+                    }
+                    return done(new Error('Not the same cheerio object'));
+                });
+            });
+            webcheck.crawl({
+                url: 'http://localhost:' + port
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+            });
+        });
+        it('should get cheerio after processing', function (done) {
+            var first;
+            webcheck.once('result', function (result) {
+                result.getCheerio(function (err, $) {
+                    if (err) {
+                        return done(err);
+                    }
+                    first = $;
+                    setTimeout(function () {
+                        result.getCheerio(function (err, $) {
+                            if (err) {
+                                return done(err);
+                            }
+                            if (first === $) {
+                                return done();
+                            }
+                            return done(new Error('Not the same cheerio object'));
+                        });
+                    }, 5);
+                });
+            });
+            webcheck.crawl({
+                url: 'http://localhost:' + port
+            }, function (err) {
+                if (err) {
+                    return done(err);
+                }
+            });
+        });
+    });
 });
