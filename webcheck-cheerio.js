@@ -19,7 +19,6 @@ var emptyFilter = {
  * Cheerio plugin for webcheck
  * @author Arne Schubert <atd.schubert@gmail.com>
  * @param {{}} [opts] - Options for this plugin
- * @param {RegExp|{test:Function}} [opts.filterContentType] - Filter content-type (defaults xml and html)
  * @param {RegExp|{test:Function}} [opts.filterStatusCode] - Filter HTTP status code (default all)
  * @augments Webcheck.Plugin
  * @constructor
@@ -38,7 +37,7 @@ var CheerioPlugin = function (opts) {
             error,
             cbList = [];
         if (!opts.filterContentType.test(result.response.headers['content-type']) ||
-            !opts.filterStatusCode.test(result.response.statusCode.toString())) {
+                !opts.filterStatusCode.test(result.response.statusCode.toString())) {
             return next();
         }
         /**
