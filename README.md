@@ -35,3 +35,18 @@ webcheck.on('result', function (result) {
 ## Options
 
 - `filterContentType`: Filter content-type that should process cheerio (default xml and html).
+
+### Note for filters
+
+Filters are regular expressions, but the plugin uses only the `.test(str)` method to proof. You are able to write
+your own and much complexer functions by writing the logic in the test method of an object like this:
+
+```js
+opts = {
+   filterSomething: {
+       test: function (val) {
+           return false || true;
+       }
+   }
+}
+```
