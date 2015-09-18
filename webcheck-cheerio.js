@@ -20,6 +20,7 @@ var emptyFilter = {
  * @author Arne Schubert <atd.schubert@gmail.com>
  * @param {{}} [opts] - Options for this plugin
  * @param {RegExp|{test:Function}} [opts.filterStatusCode] - Filter HTTP status code (default all)
+ * @param {RegExp|{test:Function}} [opts.filterContentType] - Filter content-type (default html and xml)
  * @augments Webcheck.Plugin
  * @constructor
  */

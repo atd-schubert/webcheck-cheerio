@@ -35,6 +35,7 @@ webcheck.on('result', function (result) {
 ## Options
 
 - `filterContentType`: Filter content-type that should process cheerio (default xml and html).
+- `filterStatusCode`: Filter status codes that should process cheerio (default all).
 
 ### Note for filters
 
