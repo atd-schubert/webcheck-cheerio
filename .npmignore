@@ -28,9 +28,5 @@ node_modules
 
 .idea
 
-*.js
-*.js.map
-*.d.ts
-
-typings/
-
+index.ts
+webcheck-cheerio.ts

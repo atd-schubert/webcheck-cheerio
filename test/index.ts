@@ -1,36 +1,33 @@
-/*jslint node:true*/
+/// <reference path="../typings/main.d.ts" />
 
-/*global describe, it, before, after, beforeEach, afterEach*/
+import { CheerioPlugin, ICheerioPluginResult } from '../webcheck-cheerio';
+import { Webcheck } from 'webcheck';
+import * as freeport from 'freeport';
+import * as express from 'express';
 
-'use strict';
+/* tslint:disable:align */
 
-var CheerioPlugin = require('../');
-
-var Webcheck = require('webcheck');
-var freeport = require('freeport');
-var express = require('express');
-
-describe('Cheerio Plugin', function () {
-    var port;
-    before(function (done) {
-        var app = express();
+describe('Cheerio Plugin', (): void => {
+    var port: number;
+    before((done: MochaDone): void => {
+        var app: express.Express = express();
 
         /*jslint unparam: true*/
-        app.get('/', function (req, res) {
+        app.get('/', (req: express.Request, res: express.Response): void => {
             res.send('<html><head></head><body><p>index</p></body></html>');
         });
-        app.get('/500', function (req, res) {
+        app.get('/500', (req: express.Request, res: express.Response): void => {
             res.status(500).send('<html><head></head><body><p>500</p></body></html>');
         });
-        app.get('/xml', function (req, res) {
+        app.get('/xml', (req: express.Request, res: express.Response): void => {
             res.type('xml').send('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><directory><title>XML</title></directory>');
         });
-        app.get('/json', function (req, res) {
+        app.get('/json', (req: express.Request, res: express.Response): void => {
             res.send({test: 'OK'});
         });
         /*jslint unparam: false*/
 
-        freeport(function (err, p) {
+        freeport((err: Error, p: number): void => {
             if (err) {
                 done(err);
             }
@@ -40,25 +37,29 @@ describe('Cheerio Plugin', function () {
         });
     });
 
-    describe('Basic functions', function () {
-        var webcheck, plugin;
+    describe('Basic functions', (): void => {
+        var webcheck: Webcheck,
+            plugin: CheerioPlugin;
 
-        before(function () {
-            webcheck = new Webcheck();
-            plugin = new CheerioPlugin();
+        before((): void => {
+            webcheck = new Webcheck({});
+            plugin = new CheerioPlugin({});
+
             webcheck.addPlugin(plugin);
             plugin.enable();
         });
-        it('should have a getCheerio function in result', function (done) {
-            var found;
-            webcheck.once('result', function (result) {
+        it('should have a getCheerio function in result', (done: MochaDone): void => {
+            var found: boolean;
+
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
                 if (typeof result.getCheerio === 'function') {
                     found = true;
                 }
             });
+
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
@@ -68,9 +69,9 @@ describe('Cheerio Plugin', function () {
                 return done(new Error('Function not found'));
             });
         });
-        it('should have cheerioize result', function (done) {
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should have cheerioize result', (done: MochaDone): void => {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
@@ -82,15 +83,15 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should have cheerioize result on http-error', function (done) {
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should have cheerioize result on http-error', (done: MochaDone): void => {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
@@ -102,22 +103,22 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port + '/500'
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should not have getCheerio if result is not html or xml', function (done) {
-            var notFound;
-            webcheck.once('result', function (result) {
+        it('should not have getCheerio if result is not html or xml', (done: MochaDone): void => {
+            var notFound: boolean;
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
                 if (typeof result.getCheerio !== 'function') {
                     notFound = true;
                 }
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port + '/json'
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
@@ -127,9 +128,9 @@ describe('Cheerio Plugin', function () {
                 return done(new Error('There was a getCheerio function'));
             });
         });
-        it('should process xml', function (done) {
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should process xml', (done: MochaDone): void => {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
@@ -141,24 +142,24 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port + '/xml'
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should load cheerio once', function (done) {
-            var first;
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should load cheerio once', (done: MochaDone): void => {
+            var first: CheerioStatic;
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
                     first = $;
                 });
             });
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
@@ -170,26 +171,26 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should get cheerio after processing', function (done) {
-            var first;
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should get cheerio after processing', (done: MochaDone): void => {
+            var first: CheerioStatic;
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
                     first = $;
-                    setTimeout(function () {
-                        result.getCheerio(function (err, $) {
-                            if (err) {
-                                return done(err);
+                    setTimeout((): void => {
+                        result.getCheerio((err2: Error, $2: CheerioStatic): void => {
+                            if (err2) {
+                                return done(err2);
                             }
-                            if (first === $) {
+                            if (first === $2) {
                                 return done();
                             }
                             return done(new Error('Not the same cheerio object'));
@@ -199,34 +200,35 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
     });
-    describe('Filter HTTP status code', function () {
-        var webcheck, plugin;
+    describe('Filter HTTP status code', (): void => {
+        var webcheck: Webcheck,
+            plugin: CheerioPlugin;
 
-        before(function () {
-            webcheck = new Webcheck();
+        before((): void => {
+            webcheck = new Webcheck({});
             plugin = new CheerioPlugin({
                 filterStatusCode: /^2/
             });
             webcheck.addPlugin(plugin);
             plugin.enable();
         });
-        it('should have a getCheerio function in result', function (done) {
-            var found;
-            webcheck.once('result', function (result) {
+        it('should have a getCheerio function in result', (done: MochaDone): void => {
+            var found: boolean;
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
                 if (typeof result.getCheerio === 'function') {
                     found = true;
                 }
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
@@ -236,9 +238,9 @@ describe('Cheerio Plugin', function () {
                 return done(new Error('Function not found'));
             });
         });
-        it('should have cheerioize result', function (done) {
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should have cheerioize result', (done: MochaDone): void => {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
@@ -250,14 +252,14 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should have cheerioize result on http-error', function (done) {
-            webcheck.once('result', function (result) {
+        it('should have cheerioize result on http-error', (done: MochaDone): void => {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
                 if (typeof result.getCheerio === 'function') {
                     return done(new Error('Does not filter status code'));
                 }
@@ -265,22 +267,22 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port + '/500'
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should not have getCheerio if result is not html or xml', function (done) {
-            var notFound;
-            webcheck.once('result', function (result) {
+        it('should not have getCheerio if result is not html or xml', (done: MochaDone): void => {
+            var notFound: boolean;
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
                 if (typeof result.getCheerio !== 'function') {
                     notFound = true;
                 }
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port + '/json'
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
@@ -290,9 +292,9 @@ describe('Cheerio Plugin', function () {
                 return done(new Error('There was a getCheerio function'));
             });
         });
-        it('should process xml', function (done) {
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should process xml', (done: MochaDone): void => {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
@@ -304,24 +306,24 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port + '/xml'
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should load cheerio once', function (done) {
-            var first;
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should load cheerio once', (done: MochaDone): void => {
+            var first: CheerioStatic;
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
                     first = $;
                 });
             });
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
@@ -333,26 +335,26 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
             });
         });
-        it('should get cheerio after processing', function (done) {
-            var first;
-            webcheck.once('result', function (result) {
-                result.getCheerio(function (err, $) {
+        it('should get cheerio after processing', (done: MochaDone): void => {
+            var first: CheerioStatic;
+            webcheck.once('result', (result: ICheerioPluginResult): void => {
+                result.getCheerio((err: Error, $: CheerioStatic): void => {
                     if (err) {
                         return done(err);
                     }
                     first = $;
-                    setTimeout(function () {
-                        result.getCheerio(function (err, $) {
-                            if (err) {
-                                return done(err);
+                    setTimeout((): void => {
+                        result.getCheerio((err2: Error, $2: CheerioStatic): void => {
+                            if (err2) {
+                                return done(err2);
                             }
-                            if (first === $) {
+                            if (first === $2) {
                                 return done();
                             }
                             return done(new Error('Not the same cheerio object'));
@@ -362,7 +364,7 @@ describe('Cheerio Plugin', function () {
             });
             webcheck.crawl({
                 url: 'http://localhost:' + port
-            }, function (err) {
+            }, (err: Error): void => {
                 if (err) {
                     return done(err);
                 }
